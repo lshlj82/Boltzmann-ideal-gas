@@ -1,0 +1,678 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Boltzmann statistics of an ideal gas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&display=swap" rel="stylesheet">
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},startup:{typeset:true}};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script>
+<style>
+:root{
+  --paper:#EDF1F4; --sheet:#FAFBFC; --gridc:rgba(46,76,219,.065);
+  --ink:#16203A; --ink2:#4D5974; --rule:#C6D0D9;
+  --hl:#7BE07A; --hlSoft:rgba(123,224,122,.5);
+  --green:#1E7A32; --magenta:#C7338F; --blue:#2E4CDB; --red:#CC3427; --violet:#7A3FA2;
+  --band:rgba(46,76,219,.16);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#121822; --sheet:#18202C; --gridc:rgba(125,149,255,.06);
+    --ink:#E4E9F1; --ink2:#9CA8BC; --rule:#2D3848;
+    --hl:#4CC35A; --hlSoft:rgba(76,195,90,.32);
+    --green:#7EE08A; --magenta:#F06BC0; --blue:#8CA0FF; --red:#FF7366; --violet:#C690EC;
+    --band:rgba(140,160,255,.2);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+    --paper:#121822; --sheet:#18202C; --gridc:rgba(125,149,255,.06);
+    --ink:#E4E9F1; --ink2:#9CA8BC; --rule:#2D3848;
+    --hl:#4CC35A; --hlSoft:rgba(76,195,90,.32);
+    --green:#7EE08A; --magenta:#F06BC0; --blue:#8CA0FF; --red:#FF7366; --violet:#C690EC;
+    --band:rgba(140,160,255,.2);
+    color-scheme:dark;
+}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 64px);scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+*,*::before,*::after{box-sizing:inherit}
+body{
+  margin:0;color:var(--ink);background-color:var(--paper);
+  background-image:linear-gradient(var(--gridc) 1px,transparent 1px),linear-gradient(90deg,var(--gridc) 1px,transparent 1px);
+  background-size:24px 24px;
+  font-family:"Source Serif 4",Georgia,"Times New Roman",serif;font-size:18px;line-height:1.6;
+  font-optical-sizing:auto;
+}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:color-mix(in srgb,var(--paper) 88%,transparent);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-bottom:1px solid var(--rule)}
+nav .wrap{display:flex;gap:4px 22px;overflow-x:auto;padding-top:10px;padding-bottom:10px;font-size:15px;white-space:nowrap;scrollbar-width:none}
+nav a{color:var(--ink2);text-decoration:none}
+nav a:hover{color:var(--ink);text-decoration:underline}
+nav a .sn{color:var(--blue);font-variant-numeric:tabular-nums;margin-right:.3em}
+header{padding:48px 0 8px}
+h1{font-size:clamp(2.1rem,5vw,3.4rem);line-height:1.08;margin:0 0 14px;font-weight:600;letter-spacing:-.01em;max-width:17ch}
+h2{font-size:1.75rem;line-height:1.2;margin:0 0 10px;font-weight:600}
+h2 .sn{color:var(--blue);font-weight:400;margin-right:.35em;font-variant-numeric:tabular-nums}
+h3{font-size:1.15rem;margin:22px 0 6px;font-weight:600}
+p{margin:0 0 12px}
+.lede{font-size:1.15rem;color:var(--ink2);max-width:62ch}
+.prose{max-width:66ch}
+section{padding:44px 0 36px;border-top:1px solid var(--rule)}
+header + section{border-top:none;padding-top:16px}
+.sheet{background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:14px}
+.layout{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(0,1fr);gap:22px;align-items:start;margin-top:18px}
+@media (max-width:880px){.layout{grid-template-columns:minmax(0,1fr)}}
+.trio{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr) minmax(0,1.3fr);gap:14px;margin-top:18px}
+@media (max-width:900px){.trio{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.trio .wide{grid-column:1/-1}}
+@media (max-width:560px){.trio{grid-template-columns:minmax(0,1fr)}}
+.pair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;margin-top:18px}
+@media (max-width:760px){.pair{grid-template-columns:minmax(0,1fr)}}
+canvas{display:block;width:100%;touch-action:none}
+.cv-hero{height:400px}
+.cv-mid{height:300px}
+.cv-sq{aspect-ratio:1/1;height:auto}
+@media (max-width:560px){.cv-hero{height:300px}.cv-mid{height:260px}}
+.cap{font-size:14.5px;color:var(--ink2);margin:8px 2px 0;line-height:1.45}
+.controls{display:grid;gap:10px;font-size:16px}
+.ctl{display:grid;grid-template-columns:7.2em minmax(0,1fr) 5.6em;align-items:center;gap:10px}
+.ctl output{text-align:right;font-variant-numeric:tabular-nums}
+.ctl span:first-child{color:var(--ink2)}
+input[type=range]{width:100%;accent-color:var(--blue);margin:0}
+select{font:inherit;font-size:16px;color:var(--ink);background:var(--sheet);border:1px solid var(--rule);border-radius:4px;padding:4px 6px;max-width:100%}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{font:inherit;font-size:15px;padding:5px 12px;border:1px solid var(--ink2);background:transparent;color:var(--ink);border-radius:4px;cursor:pointer;line-height:1.4}
+.btn:hover{border-color:var(--ink)}
+.btn[aria-pressed="true"]{background:var(--ink);color:var(--sheet);border-color:var(--ink)}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.read{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 14px;margin:14px 0 0;font-size:16px;font-variant-numeric:tabular-nums}
+.read dt{color:var(--ink2)}
+.read dd{margin:0;text-align:right}
+.read .gap{grid-column:1/-1;height:6px}
+.hl{background:linear-gradient(transparent 12%,var(--hlSoft) 12%,var(--hlSoft) 90%,transparent 90%);padding:0 .2em;border-radius:2px}
+.hand{font-style:italic;color:var(--magenta)}
+.note{font-style:italic;color:var(--ink2);font-size:15.5px;line-height:1.45;margin:14px 0 0;padding-left:12px;border-left:2px solid var(--magenta)}
+.eq{overflow-x:auto;margin:10px 0 14px;font-size:17px}
+.badge{display:inline-block;font-size:14px;padding:1px 9px;border-radius:999px;border:1px solid currentColor}
+.badge.classical{color:var(--green)}
+.badge.quantum{color:var(--red)}
+.badge.mid{color:var(--violet)}
+.cols{columns:2 300px;column-gap:32px;max-width:none}
+.cols p{break-inside:avoid}
+footer{padding:30px 0 50px;color:var(--ink2);font-size:14.5px;border-top:1px solid var(--rule)}
+mjx-container{max-width:100%}
+</style>
+</head>
+<body>
+<nav aria-label="Sections">
+  <div class="wrap">
+    <a href="#maxwell"><span class="sn">6.4</span>Maxwell speed distribution</a>
+    <a href="#thermalize"><span class="sn">6.4</span>How it emerges</a>
+    <a href="#counting"><span class="sn">6.6</span>Counting system states</a>
+    <a href="#box"><span class="sn">6.7</span>Particle in a box</a>
+    <a href="#thermo"><span class="sn">6.7</span>Ideal gas thermodynamics</a>
+  </div>
+</nav>
+
+<div class="wrap">
+<header>
+  <h1>Boltzmann statistics of an ideal gas</h1>
+  <p class="lede">An interactive companion to the lecture notes by Sang Hoon Lee: one Boltzmann factor, \(e^{-E(s)/k_BT}\), and some careful counting of states give you the speeds of molecules, the partition function, and the entropy of a gas.</p>
+</header>
+
+<!-- ===================== 6.4 Maxwell ===================== -->
+<section id="maxwell">
+  <h2><span class="sn">6.4</span>The Maxwell speed distribution</h2>
+  <div class="prose">
+    <p>The probability of a speed is the probability of one velocity vector times the number of vectors with that speed. The first is a Boltzmann factor; the second is the area \(4\pi v^2\) of a sphere in velocity space.</p>
+    <div class="eq">\[\mathcal{D}(v)=\left(\frac{m}{2\pi k_BT}\right)^{3/2}4\pi v^2\,e^{-mv^2/2k_BT}\]</div>
+  </div>
+  <div class="layout">
+    <div class="sheet">
+      <canvas id="heroCv" class="cv-hero" aria-label="Plot of the Maxwell speed distribution with a shaded speed range"></canvas>
+      <p class="cap">Drag on the plot to move the nearer edge of the shaded band. The shaded area is the probability that a molecule's speed lies between \(v_1\) and \(v_2\).</p>
+    </div>
+    <div>
+      <div class="controls">
+        <label class="ctl"><span>Gas</span>
+          <select id="hGas"></select><span></span></label>
+        <label class="ctl"><span>Temperature</span>
+          <input id="hT" type="range" min="0" max="1000" step="1"><output id="hTo"></output></label>
+        <label class="ctl"><span>\(v_1\)</span>
+          <input id="hV1" type="range" min="0" max="1000" step="1"><output id="hV1o"></output></label>
+        <label class="ctl"><span>\(v_2\)</span>
+          <input id="hV2" type="range" min="0" max="1000" step="1"><output id="hV2o"></output></label>
+        <div class="row">
+          <button class="btn" id="hDec" aria-pressed="false">Show the two factors</button>
+          <button class="btn" id="hCmp" aria-pressed="false">Compare gases</button>
+        </div>
+      </div>
+      <dl class="read" id="hRead"></dl>
+      <p class="note">\(v_\text{max} &lt; \bar v &lt; v_\text{rms}\) always, since \(2 &lt; 8/\pi &lt; 3\). The ratios never change; only the scale √(k<sub>B</sub>T/m) does.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== Thermalization ===================== -->
+<section id="thermalize">
+  <h2><span class="sn">6.4</span>How the distribution emerges</h2>
+  <div class="prose">
+    <p>Start 1,200 argon atoms with an artificial distribution of speeds and let them collide. Every collision conserves energy and momentum, but randomizes direction. Nothing in the rules mentions Boltzmann, yet the histogram settles onto the Maxwell curve for the temperature set by the total energy.</p>
+  </div>
+  <div class="trio">
+    <div class="sheet"><canvas id="sBox" class="cv-sq" aria-label="Box of moving atoms colored by speed"></canvas>
+      <p class="cap">Positions, projected onto the x–y plane. Color runs from slow (blue) to fast (red).</p></div>
+    <div class="sheet"><canvas id="sVel" class="cv-sq" aria-label="Velocity space scatter plot"></canvas>
+      <p class="cap">Velocity space, projected onto \((v_x, v_y)\). The most likely <em>velocity</em> is zero, but the most likely <em>speed</em> is not.</p></div>
+    <div class="sheet wide"><canvas id="sHist" class="cv-sq" aria-label="Histogram of speeds compared with the Maxwell distribution"></canvas>
+      <p class="cap">Histogram of speeds against \(\mathcal{D}(v)\) at the measured temperature.</p></div>
+  </div>
+  <div class="layout" style="grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)">
+    <div class="controls">
+      <div class="row">
+        <span style="color:var(--ink2);margin-right:4px">Start with</span>
+        <button class="btn" data-init="same" aria-pressed="true">Every atom at one speed</button>
+        <button class="btn" data-init="beam" aria-pressed="false">Motion only along x</button>
+        <button class="btn" data-init="maxwell" aria-pressed="false">Maxwell already</button>
+      </div>
+      <label class="ctl"><span>Collisions</span>
+        <input id="sRate" type="range" min="0" max="12" step="0.5" value="3"><output id="sRateo"></output></label>
+      <div class="row">
+        <button class="btn" id="sRun" aria-pressed="false">Pause</button>
+        <button class="btn" id="sHeat">Heat (T × 1.5)</button>
+        <button class="btn" id="sCool">Cool (T ÷ 1.5)</button>
+      </div>
+      <p class="cap">Collisions are counted per atom per second. Set them to zero with “Motion only along x” and the walls alone never thermalize the gas: reflections flip v<sub>x</sub> but keep every speed.</p>
+    </div>
+    <dl class="read" id="sRead" style="margin-top:0"></dl>
+  </div>
+</section>
+
+<!-- ===================== 6.6 Counting ===================== -->
+<section id="counting">
+  <h2><span class="sn">6.6</span>Counting system states: why \(1/N!\)</h2>
+  <div class="prose">
+    <p>For two non-interacting, distinguishable particles every pair \((s_1,s_2)\) is a distinct system state, so \(Z_\text{total}=Z_1Z_2\). For identical particles, \((s_1,s_2)\) and \((s_2,s_1)\) are the same state, so the double sum counts nearly every state twice. Only the diagonal \(s_1=s_2\) is counted once, and it becomes a negligible sliver when there are many more single-particle states than particles.</p>
+  </div>
+  <div class="layout">
+    <div class="sheet"><canvas id="cGrid" class="cv-sq" style="max-width:560px;margin:0 auto" aria-label="Grid of two-particle states"></canvas>
+      <p class="cap">Each cell is one term of \(\sum_{s_1}\sum_{s_2}\) for two particles. Hover or tap a cell to see its mirror image, the same state for identical particles. Magenta cells are \(s_1=s_2\).</p></div>
+    <div>
+      <div class="controls">
+        <label class="ctl"><span>Single-particle states, M</span>
+          <input id="cM" type="range" min="2" max="40" step="1" value="6"><output id="cMo"></output></label>
+        <label class="ctl"><span>Particles, N</span>
+          <input id="cN" type="range" min="2" max="6" step="1" value="2"><output id="cNo"></output></label>
+      </div>
+      <dl class="read" id="cRead"></dl>
+      <p class="note">“Not too dense” means M ≫ N. In a real gas M ≈ V/v<sub>Q</sub> is about 10⁷ per molecule, so Z<sub>1</sub><sup>N</sup>/N! is essentially exact. When it fails, you need the boson and fermion counts of the next chapter.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 6.7 Box ===================== -->
+<section id="box">
+  <h2><span class="sn">6.7</span>Particle in a box: from a sum to \(L/\ell_Q\)</h2>
+  <div class="prose">
+    <p>A molecule in a one-dimensional box of length \(L\) has energies \(E_n = h^2n^2/8mL^2\). Measured in units of the quantum length \(\ell_Q = h/\sqrt{2\pi m k_BT}\), the Boltzmann factors depend on one number only:</p>
+    <div class="eq">\[\frac{E_n}{k_BT}=\frac{\pi}{4}\,\frac{n^2}{(L/\ell_Q)^2},\qquad Z_{1d}=\sum_{n=1}^{\infty}e^{-E_n/k_BT}\;\approx\;\int_0^\infty e^{-E_n/k_BT}\,dn=\frac{L}{\ell_Q}\]</div>
+  </div>
+  <div class="controls" style="max-width:620px;margin-top:8px">
+    <label class="ctl"><span>\(L/\ell_Q\)</span>
+      <input id="bR" type="range" min="0" max="1000" step="1"><output id="bRo"></output></label>
+  </div>
+  <div class="pair">
+    <div class="sheet"><canvas id="bLev" class="cv-mid" aria-label="Energy levels and wavefunctions in a box"></canvas>
+      <p class="cap">Energy levels up to \(5k_BT\), with \(\psi_n=\sin(n\pi x/L)\) drawn on the first few. Fainter levels have smaller Boltzmann factors.</p></div>
+    <div class="sheet"><canvas id="bSum" class="cv-mid" aria-label="Boltzmann factors as bars compared with the integral"></canvas>
+      <p class="cap">Bars: the terms of the sum. Green area: the integral, exactly \(L/\ell_Q\).</p></div>
+  </div>
+  <div class="layout" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)">
+    <dl class="read" id="bRead"></dl>
+    <div>
+      <p class="prose" style="font-size:16px">The sum and the integral differ by almost exactly ½, the half-bar the integral counts at \(n=0\). Poisson summation makes this precise: the next correction is \(2(L/\ell_Q)\,e^{-4\pi(L/\ell_Q)^2}\), which is why Pickover's \(\left(10^{-5}\sum e^{-n^2/10^{10}}\right)^2\) matches π to some 42 billion digits.</p>
+      <h3>How big is \(L/\ell_Q\) for a real gas?</h3>
+      <div class="controls">
+        <label class="ctl"><span>Gas</span><select id="bGas"></select><span></span></label>
+        <label class="ctl"><span>Temperature</span><input id="bT" type="range" min="0" max="1000" step="1"><output id="bTo"></output></label>
+      </div>
+      <dl class="read" id="bReal"></dl>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 6.7 Thermo ===================== -->
+<section id="thermo">
+  <h2><span class="sn">6.7</span>Ideal gas thermodynamics from \(Z\)</h2>
+  <div class="prose">
+    <p>For \(N\) indistinguishable, non-interacting molecules, \(Z=\frac{1}{N!}\left(VZ_\text{int}/v_Q\right)^N\) with \(v_Q=\ell_Q^3\). Everything follows from \(F=-k_BT\ln Z\). For a monatomic gas (\(Z_\text{int}=1\)):</p>
+    <div class="eq">\[P=\frac{Nk_BT}{V},\quad U=\tfrac32Nk_BT,\quad S=Nk_B\!\left[\ln\frac{V}{Nv_Q}+\frac52\right],\quad \mu=-k_BT\ln\frac{V}{Nv_Q}\]</div>
+  </div>
+  <div class="layout">
+    <div class="sheet"><canvas id="tCv" class="cv-hero" aria-label="Entropy per molecule versus temperature"></canvas>
+      <p class="cap">Sackur–Tetrode entropy per molecule versus temperature at the chosen pressure, for five noble gases. Below the dashed line \(V/N &lt; v_Q\): molecules' wavefunctions overlap and Boltzmann statistics no longer applies.</p></div>
+    <div>
+      <div class="controls">
+        <label class="ctl"><span>Gas</span><select id="tGas"></select><span></span></label>
+        <label class="ctl"><span>Temperature</span><input id="tT" type="range" min="0" max="1000" step="1"><output id="tTo"></output></label>
+        <label class="ctl"><span>Pressure</span><input id="tP" type="range" min="0" max="1000" step="1"><output id="tPo"></output></label>
+        <div class="row"><button class="btn" id="tStd">Set to 298 K, 1 bar</button></div>
+      </div>
+      <dl class="read" id="tRead"></dl>
+    </div>
+  </div>
+  <div class="cols prose" style="margin-top:22px;font-size:16.5px">
+    <p><strong>Why the \(1/N!\) matters.</strong> Without it, \(S/Nk_B=\ln(V/v_Q)+\tfrac32\) depends on \(V\) rather than \(V/N\). Pull out a partition between two identical boxes of the same gas and that formula would add \(2Nk_B\ln 2\) of entropy, though nothing has changed. This is the Gibbs paradox; the \(N!\) restores extensivity.</p>
+    <p><strong>Where \(\tfrac32Nk_BT\) comes from.</strong> \(Z_\text{tr}=V/v_Q\propto\beta^{-3/2}\), so \(-\partial\ln Z/\partial\beta\) gives \(\tfrac32 k_BT\) per molecule: the equipartition result, recovered here as the classical limit of the quantum sum.</p>
+  </div>
+</section>
+
+<footer>
+  <p style="margin:0 0 8px;color:var(--ink)">Created by Claude Opus 5.5, based on the lecture notes by Sang Hoon Lee.</p>
+  Constants: CODATA 2018 (\(k_B\), \(h\), atomic mass unit). Tabulated entropies are standard molar entropies at 298.15 K and 1 bar. Internal (rotational, vibrational, electronic) contributions are left out of the thermodynamics panel, which treats monatomic gases only.
+</footer>
+</div>
+
+<script>
+(() => {
+"use strict";
+const kB=1.380649e-23, hP=6.62607015e-34, amu=1.66053906660e-27, eV=1.602176634e-19, NA=6.02214076e23, atm=101325;
+const GASES={
+  H2:{name:"Hydrogen, H₂",m:2.016}, He:{name:"Helium, He",m:4.0026}, Ne:{name:"Neon, Ne",m:20.180},
+  N2:{name:"Nitrogen, N₂",m:28.014}, O2:{name:"Oxygen, O₂",m:31.998}, Ar:{name:"Argon, Ar",m:39.948},
+  Kr:{name:"Krypton, Kr",m:83.798}, Xe:{name:"Xenon, Xe",m:131.29}
+};
+const NOBLE=["He","Ne","Ar","Kr","Xe"];
+const S0TAB={He:126.15,Ne:146.33,Ar:154.85,Kr:164.08,Xe:169.68};
+const $=s=>document.querySelector(s);
+const SERIF='"Source Serif 4",Georgia,serif';
+
+// ---------- helpers ----------
+let C={};
+function readColors(){const cs=getComputedStyle(document.documentElement);
+  for(const k of["ink","ink2","rule","sheet","blue","red","magenta","green","violet","hl","hlSoft","band"])C[k]=cs.getPropertyValue("--"+k).trim();}
+function prep(cv){const r=cv.getBoundingClientRect();const d=window.devicePixelRatio||1;
+  const W=Math.max(1,Math.round(r.width*d)),H=Math.max(1,Math.round(r.height*d));
+  if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;}
+  const ctx=cv.getContext("2d");ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,r.width,r.height);return{ctx,w:r.width,h:r.height};}
+function niceCeil(x){const p=Math.pow(10,Math.floor(Math.log10(x)));for(const m of[1,1.2,1.5,2,2.5,3,4,5,6,8,10])if(m*p>=x*0.9999)return m*p;return 10*p;}
+function niceStep(range,target){const raw=range/target;const p=Math.pow(10,Math.floor(Math.log10(raw)));const f=raw/p;return(f<1.5?1:f<3?2:f<7?5:10)*p;}
+function erf(x){const s=Math.sign(x);x=Math.abs(x);const t=1/(1+0.3275911*x);
+  const y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x);return s*y;}
+function cdfMax(v,vp){const x=v/vp;return erf(x)-2/Math.sqrt(Math.PI)*x*Math.exp(-x*x);}
+function Dv(v,m,T){const a=m/(2*kB*T);return Math.pow(a/Math.PI,1.5)*4*Math.PI*v*v*Math.exp(-a*v*v);}
+function speeds(m,T){const kT=kB*T;return{vp:Math.sqrt(2*kT/m),vb:Math.sqrt(8*kT/(Math.PI*m)),vr:Math.sqrt(3*kT/m)};}
+function logMap(lo,hi){return{to:s=>lo*Math.pow(hi/lo,s/1000),from:v=>1000*Math.log(v/lo)/Math.log(hi/lo)};}
+const SUP={"-":"⁻","0":"⁰","1":"¹","2":"²","3":"³","4":"⁴","5":"⁵","6":"⁶","7":"⁷","8":"⁸","9":"⁹"};
+function sci(x,d=3){if(x===0)return"0";if(!isFinite(x))return"∞";const a=Math.abs(x);
+  if(a>=1e-3&&a<1e5){let s=x.toPrecision(d);if(s.includes("e"))s=Number(s).toString();return s.replace("-","−");}
+  const e=Math.floor(Math.log10(a));let mnt=x/Math.pow(10,e);let ms=mnt.toPrecision(d);
+  if(Math.abs(parseFloat(ms))>=10){mnt/=10;ms=mnt.toPrecision(d);return ms.replace("-","−")+"×10"+String(e+1).split("").map(c=>SUP[c]).join("");}
+  return ms.replace("-","−")+"×10"+String(e).split("").map(c=>SUP[c]).join("");}
+function fmtT(T){return T<10?T.toFixed(1)+" K":Math.round(T)+" K";}
+function fmtV(v){return Math.round(v).toLocaleString("en-US")+" m/s";}
+// draws text segments: plain strings, {sub:"x"}, {vec:"v"} (arrow over), {bar:"v"} (bar over); honors textAlign
+function rich(ctx,segs,x,y){const f=ctx.font,m=f.match(/([\d.]+)px/),sz=+m[1],sf=f.replace(m[0],(sz*0.7).toFixed(1)+"px");
+  const parts=segs.map(g=>typeof g==="string"?{t:g,k:"n"}:g.sub!=null?{t:g.sub,k:"sub"}:g.vec!=null?{t:g.vec,k:"vec"}:{t:g.bar,k:"bar"});
+  let tot=0;for(const q of parts){ctx.font=q.k==="sub"?sf:f;q.w=ctx.measureText(q.t).width;tot+=q.w;}ctx.font=f;
+  const al=ctx.textAlign;let cx=al==="center"?x-tot/2:(al==="right"||al==="end")?x-tot:x;ctx.textAlign="left";
+  for(const q of parts){ctx.font=q.k==="sub"?sf:f;ctx.fillText(q.t,cx,q.k==="sub"?y+sz*0.28:y);
+    if(q.k==="vec"||q.k==="bar"){const yy=y-sz*0.62;ctx.save();ctx.strokeStyle=ctx.fillStyle;ctx.lineWidth=Math.max(1,sz/14);ctx.beginPath();
+      ctx.moveTo(cx+q.w*0.1,yy);ctx.lineTo(cx+q.w*0.95,yy);if(q.k==="vec"){ctx.moveTo(cx+q.w*0.95-sz*0.18,yy-sz*0.12);ctx.lineTo(cx+q.w*0.95,yy);ctx.lineTo(cx+q.w*0.95-sz*0.18,yy+sz*0.12);}ctx.stroke();ctx.restore();}
+    cx+=q.w;}
+  ctx.font=f;ctx.textAlign=al;return tot;}
+function axes(ctx,L,T,pw,ph){ctx.strokeStyle=C.ink2;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(L,T);ctx.lineTo(L,T+ph);ctx.lineTo(L+pw,T+ph);ctx.stroke();}
+function fillSelect(sel,keys,def){sel.innerHTML=keys.map(k=>`<option value="${k}"${k===def?" selected":""}>${GASES[k].name}</option>`).join("");}
+function speedColor(f){const pal=["#2E4CDB","#4B4AD3","#6B44C3","#8C3DB0","#AC3699","#C93380","#DF3E62","#EC5440","#F26D22"];
+  const i=Math.max(0,Math.min(pal.length-1,Math.floor(f/2.2*pal.length)));return pal[i];}
+
+// ===================== HERO =====================
+const H={gas:"N2",T:300,v1:500,v2:800,dec:false,cmp:false,xmax:0,ymax:0};
+const hT=logMap(20,3000);
+const heroCv=$("#heroCv");
+fillSelect($("#hGas"),Object.keys(GASES),H.gas);
+$("#hT").value=hT.from(H.T);
+function heroAxes(){const m=GASES[H.gas].m*amu;const s=speeds(m,H.T);
+  const peak=4/(Math.sqrt(Math.PI)*s.vp)*Math.exp(-1);
+  if(!H.xmax||3.3*s.vr>H.xmax||3.3*s.vr<0.5*H.xmax)H.xmax=niceCeil(3.9*s.vr);
+  if(!H.ymax||peak>H.ymax*0.97||peak<0.4*H.ymax)H.ymax=peak*1.25;
+  H.v1=Math.min(H.v1,H.xmax);H.v2=Math.min(H.v2,H.xmax);
+  return{m,...s};}
+function syncHeroInputs(){$("#hV1").value=Math.round(H.v1/H.xmax*1000);$("#hV2").value=Math.round(H.v2/H.xmax*1000);
+  $("#hTo").textContent=fmtT(H.T);$("#hV1o").textContent=fmtV(H.v1);$("#hV2o").textContent=fmtV(H.v2);}
+function drawHero(){
+  const s=heroAxes();syncHeroInputs();
+  const{ctx,w,h}=prep(heroCv);const L=58,R=14,T=16,B=46;const pw=w-L-R,ph=h-T-B;
+  const X=v=>L+v/H.xmax*pw,Y=d=>T+ph-d/H.ymax*ph;
+  // grid & ticks
+  ctx.font=`13px ${SERIF}`;ctx.fillStyle=C.ink2;ctx.strokeStyle=C.rule;ctx.lineWidth=1;
+  const xs=niceStep(H.xmax,w<520?4:7);ctx.textAlign="center";ctx.textBaseline="top";
+  for(let v=0;v<=H.xmax+1e-9;v+=xs){const x=X(v);ctx.globalAlpha=.55;ctx.beginPath();ctx.moveTo(x,T);ctx.lineTo(x,T+ph);ctx.stroke();ctx.globalAlpha=1;ctx.fillText(Math.round(v).toLocaleString("en-US"),x,T+ph+5);}
+  const ys=niceStep(H.ymax*1e3,5);ctx.textAlign="right";ctx.textBaseline="middle";
+  for(let d=0;d<=H.ymax*1e3+1e-12;d+=ys){const y=Y(d/1e3);ctx.globalAlpha=.55;ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(L+pw,y);ctx.stroke();ctx.globalAlpha=1;ctx.fillText(+d.toFixed(4)+"",L-6,y);}
+  axes(ctx,L,T,pw,ph);
+  ctx.textAlign="center";ctx.textBaseline="alphabetic";ctx.fillStyle=C.ink2;ctx.fillText("speed v (m/s)",L+pw/2,h-6);
+  ctx.save();ctx.translate(14,T+ph/2);ctx.rotate(-Math.PI/2);ctx.fillText("D(v)  (10⁻³ s/m)",0,0);ctx.restore();
+  ctx.save();ctx.beginPath();ctx.rect(L,T-2,pw+1,ph+3);ctx.clip();
+  // compare gases
+  if(H.cmp){for(const k of Object.keys(GASES)){if(k===H.gas)continue;const m=GASES[k].m*amu;
+      ctx.strokeStyle=C.ink2;ctx.globalAlpha=.35;ctx.lineWidth=1.2;ctx.beginPath();
+      for(let i=0;i<=400;i++){const v=H.xmax*i/400;const y=Y(Dv(v,m,H.T));i?ctx.lineTo(X(v),y):ctx.moveTo(X(v),y);}ctx.stroke();
+      const vp=Math.sqrt(2*kB*H.T/m);const py=Y(Dv(vp,m,H.T));ctx.globalAlpha=.7;ctx.fillStyle=C.ink2;ctx.font=`12px ${SERIF}`;
+      if(vp<H.xmax*0.97&&py>T+8){ctx.textAlign="center";ctx.fillText(k.replace("2","₂"),X(vp),py-5);}
+      ctx.globalAlpha=1;}}
+  // shaded band
+  const a=Math.min(H.v1,H.v2),b=Math.max(H.v1,H.v2);
+  ctx.fillStyle=C.band;ctx.beginPath();ctx.moveTo(X(a),Y(0));
+  for(let i=0;i<=120;i++){const v=a+(b-a)*i/120;ctx.lineTo(X(v),Y(Dv(v,s.m,H.T)));}ctx.lineTo(X(b),Y(0));ctx.closePath();ctx.fill();
+  // decomposition
+  if(H.dec){const kfac=0.92*ph;
+    ctx.setLineDash([6,5]);ctx.lineWidth=2;
+    ctx.strokeStyle=C.violet;ctx.beginPath();for(let i=0;i<=200;i++){const v=H.xmax*i/200;const y=T+ph-kfac*Math.pow(v/H.xmax,2);i?ctx.lineTo(X(v),y):ctx.moveTo(X(v),y);}ctx.stroke();
+    ctx.strokeStyle=C.red;ctx.beginPath();for(let i=0;i<=200;i++){const v=H.xmax*i/200;const y=T+ph-kfac*Math.exp(-s.m*v*v/(2*kB*H.T));i?ctx.lineTo(X(v),y):ctx.moveTo(X(v),y);}ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.font=`italic 16px ${SERIF}`;ctx.textAlign="right";ctx.fillStyle=C.violet;
+    const vg=H.xmax*0.83;ctx.fillText("4πv²  degeneracy factor",X(vg)-8,T+ph-kfac*Math.pow(.83,2)+4);
+    ctx.fillStyle=C.red;ctx.textAlign="left";
+    const vb2=Math.sqrt(2*kB*H.T/s.m)*1.15;const yb=T+ph-kfac*Math.exp(-1.3225);
+    ctx.fillText("Boltzmann factor e^(−mv²/2kT)",Math.min(X(vb2)+6,L+pw-250),Math.max(T+16,yb-6));}
+  // main curve
+  ctx.strokeStyle=C.ink;ctx.lineWidth=2.6;ctx.beginPath();
+  for(let i=0;i<=500;i++){const v=H.xmax*i/500;const y=Y(Dv(v,s.m,H.T));i?ctx.lineTo(X(v),y):ctx.moveTo(X(v),y);}ctx.stroke();
+  // markers
+  const mk=[[s.vp,["v",{sub:"max"}],C.green,"right"],[s.vb,[{bar:"v"}],C.blue,"center"],[s.vr,["v",{sub:"rms"}],C.magenta,"left"]];
+  ctx.font=`italic 15px ${SERIF}`;
+  for(const[v,lab,col,al]of mk){const y=Y(Dv(v,s.m,H.T));ctx.strokeStyle=col;ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(X(v),T+ph);ctx.lineTo(X(v),y);ctx.stroke();
+    ctx.fillStyle=col;ctx.textAlign=al;const dx=al==="right"?-5:al==="left"?5:0;const dy=al==="center"?-26:-8;
+    rich(ctx,lab,X(v)+dx,y+dy);}
+  ctx.restore();
+  // handles
+  for(const v of[H.v1,H.v2]){ctx.strokeStyle=C.blue;ctx.lineWidth=1.5;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(X(v),T);ctx.lineTo(X(v),T+ph);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle=C.blue;ctx.beginPath();ctx.moveTo(X(v),T+ph-1);ctx.lineTo(X(v)-6,T+ph+9);ctx.lineTo(X(v)+6,T+ph+9);ctx.closePath();ctx.fill();}
+  const P=cdfMax(b,s.vp)-cdfMax(a,s.vp);
+  ctx.font=`italic 17px ${SERIF}`;ctx.fillStyle=C.blue;ctx.textAlign="center";
+  const xm=(X(a)+X(b))/2;const ym=Math.min(Y(Dv((a+b)/2,s.m,H.T)),Y(Dv(a,s.m,H.T)),Y(Dv(b,s.m,H.T)));
+  ctx.fillText((P*100).toFixed(1)+"%",Math.max(L+24,Math.min(L+pw-24,xm)),Math.max(T+16,ym-40));
+  // readouts
+  const kTeV=kB*H.T/eV;
+  $("#hRead").innerHTML=`
+   <dt>Most likely speed, √(2k<sub>B</sub>T/m)</dt><dd>${fmtV(s.vp)}</dd>
+   <dt>Average speed, √(8k<sub>B</sub>T/πm)</dt><dd>${fmtV(s.vb)}</dd>
+   <dt>rms speed, √(3k<sub>B</sub>T/m)</dt><dd>${fmtV(s.vr)}</dd>
+   <dt>k<sub>B</sub>T</dt><dd>${(kTeV*1000).toFixed(1)} meV</dd>
+   <div class="gap"></div>
+   <dt>P(v₁ &lt; v &lt; v₂)</dt><dd><span class="hl">${(P*100).toFixed(2)}%</span></dd>
+   <dt>Faster than v₂</dt><dd>${((1-cdfMax(b,s.vp))*100).toFixed(2)}%</dd>
+   <dt>Slower than v₁</dt><dd>${(cdfMax(a,s.vp)*100).toFixed(2)}%</dd>`;
+}
+$("#hGas").addEventListener("change",e=>{H.gas=e.target.value;drawHero();});
+$("#hT").addEventListener("input",e=>{H.T=hT.to(+e.target.value);drawHero();});
+$("#hV1").addEventListener("input",e=>{H.v1=+e.target.value/1000*H.xmax;drawHero();});
+$("#hV2").addEventListener("input",e=>{H.v2=+e.target.value/1000*H.xmax;drawHero();});
+for(const[id,key]of[["#hDec","dec"],["#hCmp","cmp"]])$(id).addEventListener("click",e=>{H[key]=!H[key];e.currentTarget.setAttribute("aria-pressed",H[key]);drawHero();});
+let drag=null;
+function heroV(ev){const r=heroCv.getBoundingClientRect();const pw=r.width-58-14;return Math.max(0,Math.min(H.xmax,(ev.clientX-r.left-58)/pw*H.xmax));}
+heroCv.addEventListener("pointerdown",ev=>{const v=heroV(ev);drag=Math.abs(v-H.v1)<Math.abs(v-H.v2)?"v1":"v2";H[drag]=v;heroCv.setPointerCapture(ev.pointerId);drawHero();});
+heroCv.addEventListener("pointermove",ev=>{if(!drag)return;H[drag]=heroV(ev);drawHero();});
+heroCv.addEventListener("pointerup",()=>{drag=null;});
+heroCv.addEventListener("pointercancel",()=>{drag=null;});
+
+// ===================== SIMULATION =====================
+const SM={N:1200,m:GASES.Ar.m*amu,T0:300,rate:3,run:true,acc:0,t:0,vh:0,yh:0,vref:0,bins:36};
+const pos=new Float64Array(2*SM.N),vel=new Float64Array(3*SM.N);
+function gauss(){let u=0;while(u===0)u=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*Math.random());}
+function unit(){const z=2*Math.random()-1,p=2*Math.PI*Math.random(),s=Math.sqrt(1-z*z);return[s*Math.cos(p),s*Math.sin(p),z];}
+function simInit(mode){const v0=Math.sqrt(3*kB*SM.T0/SM.m),sig=Math.sqrt(kB*SM.T0/SM.m);SM.vref=v0;
+  for(let i=0;i<SM.N;i++){pos[2*i]=Math.random();pos[2*i+1]=Math.random();
+    if(mode==="same"){const u=unit();vel[3*i]=v0*u[0];vel[3*i+1]=v0*u[1];vel[3*i+2]=v0*u[2];}
+    else if(mode==="beam"){vel[3*i]=(Math.random()<.5?-1:1)*v0;vel[3*i+1]=0;vel[3*i+2]=0;}
+    else{vel[3*i]=gauss()*sig;vel[3*i+1]=gauss()*sig;vel[3*i+2]=gauss()*sig;}}
+  SM.t=0;SM.vh=0;SM.yh=0;}
+function collide(n){const N=SM.N;for(let k=0;k<n;k++){const i=(Math.random()*N)|0;let j=(Math.random()*(N-1))|0;if(j>=i)j++;
+  const a=3*i,b=3*j;const cx=(vel[a]+vel[b])/2,cy=(vel[a+1]+vel[b+1])/2,cz=(vel[a+2]+vel[b+2])/2;
+  const gx=vel[a]-vel[b],gy=vel[a+1]-vel[b+1],gz=vel[a+2]-vel[b+2];const g=Math.sqrt(gx*gx+gy*gy+gz*gz)/2;const u=unit();
+  vel[a]=cx+g*u[0];vel[a+1]=cy+g*u[1];vel[a+2]=cz+g*u[2];vel[b]=cx-g*u[0];vel[b+1]=cy-g*u[1];vel[b+2]=cz-g*u[2];}}
+function simStep(dt){const sc=dt/(3*SM.vref);
+  for(let i=0;i<SM.N;i++){let x=pos[2*i]+vel[3*i]*sc,y=pos[2*i+1]+vel[3*i+1]*sc;
+    if(x<0){x=-x;vel[3*i]=-vel[3*i];}else if(x>1){x=2-x;vel[3*i]=-vel[3*i];}
+    if(y<0){y=-y;vel[3*i+1]=-vel[3*i+1];}else if(y>1){y=2-y;vel[3*i+1]=-vel[3*i+1];}
+    pos[2*i]=Math.min(1,Math.max(0,x));pos[2*i+1]=Math.min(1,Math.max(0,y));}
+  SM.acc+=SM.rate*SM.N*dt/2;const n=Math.floor(SM.acc);SM.acc-=n;collide(n);SM.t+=dt;}
+function simStats(){let s2=0,s1=0;const sp=new Float64Array(SM.N);
+  for(let i=0;i<SM.N;i++){const v=Math.hypot(vel[3*i],vel[3*i+1],vel[3*i+2]);sp[i]=v;s1+=v;s2+=v*v;}
+  const T=SM.m*(s2/SM.N)/(3*kB);return{sp,T,vbar:s1/SM.N,vrms:Math.sqrt(s2/SM.N)};}
+function drawSim(){
+  const st=simStats();const th=speeds(SM.m,st.T);
+  if(!SM.vh||3.3*st.vrms>SM.vh||3.3*st.vrms<0.45*SM.vh)SM.vh=niceCeil(3.6*st.vrms);
+  // box
+  {const{ctx,w,h}=prep($("#sBox"));const pad=8,sz=Math.min(w,h)-2*pad;const ox=(w-sz)/2,oy=(h-sz)/2;
+   ctx.strokeStyle=C.ink2;ctx.lineWidth=1.5;ctx.strokeRect(ox,oy,sz,sz);
+   const groups={};for(let i=0;i<SM.N;i++){const c=speedColor(st.sp[i]/st.vrms);(groups[c]||(groups[c]=[])).push(i);}
+   for(const c in groups){ctx.fillStyle=c;for(const i of groups[c])ctx.fillRect(ox+pos[2*i]*sz-1.5,oy+pos[2*i+1]*sz-1.5,3,3);}}
+  // velocity space
+  {const{ctx,w,h}=prep($("#sVel"));const pad=10,sz=Math.min(w,h)-2*pad;const cx=w/2,cy=h/2;const R=SM.vh*0.62;const k=sz/2/R;
+   ctx.strokeStyle=C.rule;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(cx-sz/2,cy);ctx.lineTo(cx+sz/2,cy);ctx.moveTo(cx,cy-sz/2);ctx.lineTo(cx,cy+sz/2);ctx.stroke();
+   ctx.globalAlpha=.75;for(let i=0;i<SM.N;i++){const x=cx+vel[3*i]*k,y=cy-vel[3*i+1]*k;if(Math.abs(x-cx)>sz/2||Math.abs(y-cy)>sz/2)continue;ctx.fillStyle=speedColor(st.sp[i]/st.vrms);ctx.fillRect(x-1.2,y-1.2,2.4,2.4);}
+   ctx.globalAlpha=1;ctx.fillStyle=C.ink2;ctx.font=`13px ${SERIF}`;ctx.textAlign="right";rich(ctx,["v",{sub:"x"}],cx+sz/2-2,cy-6);ctx.textAlign="left";rich(ctx,["v",{sub:"y"}],cx+6,cy-sz/2+12);
+   ctx.font=`italic 14px ${SERIF}`;ctx.fillStyle=C.magenta;ctx.textAlign="left";rich(ctx,["densest at ",{vec:"v"}," = 0"],cx-sz/2+4,cy+sz/2-6);}
+  // histogram
+  {const{ctx,w,h}=prep($("#sHist"));const L=42,R=10,T=14,B=38;const pw=w-L-R,ph=h-T-B;const nb=SM.bins,bw=SM.vh/nb;
+   const hist=new Float64Array(nb);for(const v of st.sp){const b=Math.floor(v/bw);if(b<nb)hist[b]++;}
+   let hmax=0;const dens=[...hist].map(c=>c/(SM.N*bw));for(const d of dens)hmax=Math.max(hmax,d);
+   const peak=4/(Math.sqrt(Math.PI)*th.vp)*Math.exp(-1);const need=Math.max(hmax,peak);
+   if(!SM.yh||need>SM.yh*0.97||need<0.4*SM.yh)SM.yh=need*1.2;
+   const X=v=>L+v/SM.vh*pw,Y=d=>T+ph-d/SM.yh*ph;
+   ctx.font=`12px ${SERIF}`;ctx.fillStyle=C.ink2;ctx.textAlign="center";ctx.textBaseline="top";
+   const xs=niceStep(SM.vh,4);for(let v=0;v<=SM.vh+1e-9;v+=xs)ctx.fillText(Math.round(v)+"",X(v),T+ph+4);
+   ctx.textBaseline="alphabetic";ctx.fillText("speed (m/s)",L+pw/2,h-4);
+   ctx.fillStyle=C.band;ctx.strokeStyle=C.blue;ctx.lineWidth=1;
+   for(let b=0;b<nb;b++){const x0=X(b*bw),x1=X((b+1)*bw);const y=Y(dens[b]);ctx.fillRect(x0,y,x1-x0,T+ph-y);ctx.strokeRect(x0+.5,y+.5,x1-x0-1,T+ph-y);}
+   ctx.strokeStyle=C.ink;ctx.lineWidth=2.2;ctx.beginPath();for(let i=0;i<=200;i++){const v=SM.vh*i/200;const y=Y(Dv(v,SM.m,st.T));i?ctx.lineTo(X(v),y):ctx.moveTo(X(v),y);}ctx.stroke();
+   axes(ctx,L,T,pw,ph);
+   ctx.font=`italic 14px ${SERIF}`;ctx.fillStyle=C.ink;ctx.textAlign="left";const lx=X(th.vp*1.45);ctx.fillText("Maxwell, T = "+Math.round(st.T)+" K",Math.min(lx,L+pw-150),Y(peak)+4);
+   // mismatch
+   let tv=0;for(let b=0;b<nb;b++){const q=cdfMax((b+1)*bw,th.vp)-cdfMax(b*bw,th.vp);tv+=Math.abs(hist[b]/SM.N-q);}tv/=2;
+   SM.tv=tv;}
+  $("#sRead").innerHTML=`
+   <dt>Elapsed time</dt><dd>${SM.t.toFixed(1)} s</dd>
+   <dt>Temperature from energy, m⟨v²⟩/3k<sub>B</sub></dt><dd>${Math.round(st.T)} K</dd>
+   <dt>Measured average speed</dt><dd>${fmtV(st.vbar)}</dd>
+   <dt>Maxwell prediction, √(8k<sub>B</sub>T/πm)</dt><dd>${fmtV(th.vb)}</dd>
+   <dt>Measured rms speed</dt><dd>${fmtV(st.vrms)}</dd>
+   <dt>Mismatch with Maxwell</dt><dd><span class="${SM.tv<0.06?"hl":""}">${(SM.tv*100).toFixed(1)}%</span></dd>`;
+}
+$("#sRateo").textContent="3 /s";
+$("#sRate").addEventListener("input",e=>{SM.rate=+e.target.value;$("#sRateo").textContent=SM.rate+" /s";});
+document.querySelectorAll("[data-init]").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll("[data-init]").forEach(x=>x.setAttribute("aria-pressed",x===b));simInit(b.dataset.init);drawSim();}));
+function scaleT(f){const s=Math.sqrt(f);for(let i=0;i<3*SM.N;i++)vel[i]*=s;drawSim();}
+$("#sHeat").addEventListener("click",()=>scaleT(1.5));
+$("#sCool").addEventListener("click",()=>scaleT(1/1.5));
+const runBtn=$("#sRun");
+function setRun(r){SM.run=r;runBtn.textContent=r?"Pause":"Play";runBtn.setAttribute("aria-pressed",!r);}
+runBtn.addEventListener("click",()=>setRun(!SM.run));
+const reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+simInit("same");setRun(!reduce);
+let visible=false,last=0;
+new IntersectionObserver(es=>{visible=es[0].isIntersecting;},{threshold:0.05}).observe($("#thermalize"));
+function loop(t){const dt=Math.min(0.05,(t-last)/1000||0);last=t;
+  if(visible&&SM.run){simStep(dt);drawSim();}requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+
+// ===================== COUNTING =====================
+const CN={M:6,N:2,hover:null};
+const cGrid=$("#cGrid");
+function binom(n,k){if(k<0||k>n)return 0;let r=1;for(let i=1;i<=k;i++)r=r*(n-k+i)/i;return Math.round(r);}
+function fact(n){let r=1;for(let i=2;i<=n;i++)r*=i;return r;}
+function gridGeom(w,h){const L=34,T=8,R=8,B=34;const sz=Math.min(w-L-R,h-T-B);return{L,T,sz,cs:sz/CN.M};}
+function drawCount(){
+  const{ctx,w,h}=prep(cGrid);const g=gridGeom(w,h);const M=CN.M;
+  for(let i=0;i<M;i++)for(let j=0;j<M;j++){const x=g.L+i*g.cs,y=g.T+(M-1-j)*g.cs;
+    let col=i===j?C.magenta:C.blue;let al=i===j?.55:.16;
+    if(CN.hover){const[a,b]=CN.hover;if((i===a&&j===b)||(i===b&&j===a))al=i===j?.9:.6;}
+    ctx.globalAlpha=al;ctx.fillStyle=col;ctx.fillRect(x+.5,y+.5,g.cs-1,g.cs-1);}
+  ctx.globalAlpha=1;
+  if(CN.hover){const[a,b]=CN.hover;ctx.strokeStyle=C.ink;ctx.lineWidth=2;for(const[i,j]of[[a,b],[b,a]])ctx.strokeRect(g.L+i*g.cs+1,g.T+(M-1-j)*g.cs+1,g.cs-2,g.cs-2);
+    if(a!==b){ctx.strokeStyle=C.ink;ctx.setLineDash([4,4]);ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(g.L+(a+.5)*g.cs,g.T+(M-.5-b)*g.cs);ctx.lineTo(g.L+(b+.5)*g.cs,g.T+(M-.5-a)*g.cs);ctx.stroke();ctx.setLineDash([]);}}
+  ctx.fillStyle=C.ink2;ctx.font=`13px ${SERIF}`;ctx.textAlign="center";
+  ctx.fillText("state of particle 1, s₁",g.L+g.sz/2,g.T+g.sz+24);
+  ctx.save();ctx.translate(14,g.T+g.sz/2);ctx.rotate(-Math.PI/2);ctx.fillText("state of particle 2, s₂",0,0);ctx.restore();
+  if(M<=12){ctx.font=`11px ${SERIF}`;for(let i=0;i<M;i++){ctx.fillText(i+1,g.L+(i+.5)*g.cs,g.T+g.sz+10);ctx.textAlign="right";ctx.fillText(i+1,g.L-4,g.T+(M-.5-i)*g.cs+4);ctx.textAlign="center";}}
+  if(CN.hover){const[a,b]=CN.hover;ctx.font=`italic 15px ${SERIF}`;ctx.fillStyle=C.magenta;ctx.textAlign="left";
+    const txt=a===b?`(${a+1}, ${a+1}) counted once`:`(${a+1}, ${b+1}) = (${b+1}, ${a+1})`;
+    ctx.fillText(txt,g.L+6,g.T+18);}
+  // readouts
+  const{M:m,N:n}=CN;const dist=Math.pow(m,n),appr=dist/fact(n),bos=binom(m+n-1,n),fer=binom(m,n);
+  $("#cMo").textContent=m;$("#cNo").textContent=n;
+  $("#cRead").innerHTML=`
+   <dt>Distinguishable, M<sup>N</sup></dt><dd>${sci(dist,4)}</dd>
+   <dt>Approximation, M<sup>N</sup>/N!</dt><dd><span class="hl">${sci(appr,4)}</span></dd>
+   <dt>Exact, identical bosons</dt><dd>${sci(bos,4)}</dd>
+   <dt>Exact, identical fermions</dt><dd>${sci(fer,4)}</dd>
+   <div class="gap"></div>
+   <dt>Error of M<sup>N</sup>/N! vs bosons</dt><dd>${((appr/bos-1)*100).toFixed(1)}%</dd>
+   <dt>Error of M<sup>N</sup>/N! vs fermions</dt><dd>${fer?((appr/fer-1)*100).toFixed(1)+"%":"no states"}</dd>
+   <dt>Density, N/M</dt><dd>${(n/m).toFixed(3)}</dd>`;
+}
+$("#cM").addEventListener("input",e=>{CN.M=+e.target.value;CN.hover=null;drawCount();});
+$("#cN").addEventListener("input",e=>{CN.N=+e.target.value;drawCount();});
+function cellAt(ev){const r=cGrid.getBoundingClientRect();const g=gridGeom(r.width,r.height);
+  const i=Math.floor((ev.clientX-r.left-g.L)/g.cs),jj=Math.floor((ev.clientY-r.top-g.T)/g.cs);const j=CN.M-1-jj;
+  return(i>=0&&i<CN.M&&j>=0&&j<CN.M)?[i,j]:null;}
+cGrid.addEventListener("pointermove",ev=>{CN.hover=cellAt(ev);drawCount();});
+cGrid.addEventListener("pointerdown",ev=>{CN.hover=cellAt(ev);drawCount();});
+cGrid.addEventListener("pointerleave",ev=>{if(ev.pointerType==="mouse"){CN.hover=null;drawCount();}});
+
+// ===================== BOX =====================
+const BX={r:3};const bRm=logMap(0.1,1000);
+$("#bR").value=bRm.from(BX.r);
+function zsum(r){let s=0;for(let n=1;n<5e6;n++){const t=Math.exp(-Math.PI*n*n/(4*r*r));s+=t;if(t<1e-18*s||t===0)break;}return s;}
+function drawBox(){
+  const r=BX.r;const En=n=>Math.PI*n*n/(4*r*r);
+  $("#bRo").textContent=r<10?r.toFixed(2):r<100?r.toFixed(1):Math.round(r);
+  // levels
+  {const{ctx,w,h}=prep($("#bLev"));const L=46,R=12,T=14,B=26;const pw=w-L-R,ph=h-T-B;const Emax=5;
+   const bx0=L+pw*0.12,bx1=L+pw*0.88;const Y=e=>T+ph-e/Emax*ph;
+   ctx.fillStyle=C.rule;ctx.fillRect(bx0-5,T,5,ph);ctx.fillRect(bx1,T,5,ph);
+   ctx.font=`12px ${SERIF}`;ctx.fillStyle=C.ink2;ctx.textAlign="right";ctx.textBaseline="middle";
+   for(let e=0;e<=Emax;e++){ctx.fillText(e+"",L-8,Y(e));}
+   ctx.save();ctx.translate(12,T+ph/2);ctx.rotate(-Math.PI/2);ctx.textAlign="center";rich(ctx,["E / k",{sub:"B"},"T"],0,0);ctx.restore();
+   ctx.strokeStyle=C.ink2;ctx.beginPath();ctx.moveTo(L,T);ctx.lineTo(L,T+ph);ctx.stroke();
+   const nTop=Math.floor(r*Math.sqrt(4*Emax/Math.PI));const count=nTop;
+   ctx.textBaseline="alphabetic";
+   if(count===0){ctx.font=`italic 15px ${SERIF}`;ctx.fillStyle=C.red;ctx.textAlign="center";
+     ctx.fillText("ground state E₁ = "+sci(En(1),3)+" kT",(bx0+bx1)/2,T+30);
+     ctx.fillText("↑ far above the thermal energy",(bx0+bx1)/2,T+52);
+     ctx.fillText("almost every molecule sits in n = 1",(bx0+bx1)/2,T+74);}
+   const drawN=Math.min(count,1500);
+   for(let n=1;n<=drawN;n++){const e=En(n),y=Y(e);const bf=Math.exp(-e);
+     ctx.globalAlpha=0.18+0.82*bf;ctx.strokeStyle=C.blue;ctx.lineWidth=count>60?0.7:1.4;ctx.beginPath();ctx.moveTo(bx0,y);ctx.lineTo(bx1,y);ctx.stroke();
+     if(count<=10){const gap=n<count?Y(e)-Y(En(n+1)):(n>1?Y(En(n-1))-Y(e):22);const amp=Math.min(16,0.42*gap);
+       ctx.strokeStyle=C.ink;ctx.lineWidth=1.6;ctx.beginPath();for(let i=0;i<=120;i++){const x=i/120;const px=bx0+x*(bx1-bx0);const py=y-amp*Math.sin(n*Math.PI*x);i?ctx.lineTo(px,py):ctx.moveTo(px,py);}ctx.stroke();
+       ctx.globalAlpha=1;ctx.fillStyle=C.ink2;ctx.font=`12px ${SERIF}`;ctx.textAlign="left";ctx.fillText("n="+n,bx1+8,y+4);}}
+   ctx.globalAlpha=1;
+   ctx.setLineDash([6,4]);ctx.strokeStyle=C.magenta;ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(L,Y(1));ctx.lineTo(L+pw,Y(1));ctx.stroke();ctx.setLineDash([]);
+   ctx.font=`italic 14px ${SERIF}`;ctx.fillStyle=C.magenta;ctx.textAlign="left";rich(ctx,["k",{sub:"B"},"T"],L+4,Y(1)-5);
+   if(count>60){ctx.font=`italic 14px ${SERIF}`;ctx.fillStyle=C.green;ctx.textAlign="center";ctx.fillText(sci(count,3)+" levels below 5kT: effectively a continuum",(bx0+bx1)/2,T+ph+18);}
+   else{ctx.font=`12px ${SERIF}`;ctx.fillStyle=C.ink2;ctx.textAlign="center";ctx.textAlign="left";ctx.fillText("0",bx0-3,T+ph+18);ctx.textAlign="right";ctx.fillText("L",bx1+3,T+ph+18);}}
+  // sum vs integral
+  const Z=zsum(r);
+  {const{ctx,w,h}=prep($("#bSum"));const L=40,R=12,T=14,B=34;const pw=w-L-R,ph=h-T-B;
+   const nmax=Math.max(4,Math.ceil(r*Math.sqrt(4*Math.log(400)/Math.PI)));
+   const X=n=>L+n/(nmax+0.5)*pw,Y=f=>T+ph-f/1.08*ph;
+   ctx.fillStyle=C.hlSoft;ctx.beginPath();ctx.moveTo(X(0),Y(0));for(let i=0;i<=300;i++){const n=(nmax+0.5)*i/300;ctx.lineTo(X(n),Y(Math.exp(-En(n))));}ctx.lineTo(X(nmax+0.5),Y(0));ctx.closePath();ctx.fill();
+   const bw=Math.max(0.6,(X(1)-X(0))*0.7);ctx.fillStyle=C.blue;ctx.globalAlpha=.75;
+   for(let n=1;n<=nmax;n++){const y=Y(Math.exp(-En(n)));ctx.fillRect(X(n)-bw/2,y,bw,T+ph-y);}
+   ctx.globalAlpha=1;ctx.strokeStyle=C.green;ctx.lineWidth=2;ctx.beginPath();for(let i=0;i<=300;i++){const n=(nmax+0.5)*i/300;const y=Y(Math.exp(-En(n)));i?ctx.lineTo(X(n),y):ctx.moveTo(X(n),y);}ctx.stroke();
+   axes(ctx,L,T,pw,ph);
+   ctx.font=`12px ${SERIF}`;ctx.fillStyle=C.ink2;ctx.textAlign="right";ctx.textBaseline="middle";for(const f of[0,0.5,1])ctx.fillText(f,L-6,Y(f));
+   ctx.textAlign="center";ctx.textBaseline="top";const st=niceStep(nmax,5);for(let n=0;n<=nmax;n+=st)ctx.fillText(Math.round(n),X(n),T+ph+4);
+   ctx.textBaseline="alphabetic";ctx.fillText("quantum number n",L+pw/2,h-4);
+   ctx.font=`italic 15px ${SERIF}`;ctx.textAlign="right";ctx.fillStyle=C.blue;ctx.fillText("Σ = "+sci(Z,5),L+pw-4,T+16);
+   ctx.fillStyle=C.green;rich(ctx,["∫ = L/ℓ",{sub:"Q"}," = "+sci(r,5)],L+pw-4,T+36);}
+  const pred=r-0.5+2*r*Math.exp(-4*Math.PI*r*r);
+  let badge;if(r<1)badge=`<span class="badge quantum">quantum limit</span>`;else if(r<5)badge=`<span class="badge mid">in between</span>`;else badge=`<span class="badge classical">classical limit</span>`;
+  $("#bRead").innerHTML=`
+   <dt>Regime</dt><dd>${badge}</dd>
+   <dt>Ground state, E₁/k<sub>B</sub>T</dt><dd>${sci(En(1),3)}</dd>
+   <dt>Sum, Σ e<sup>−E<sub>n</sub>/k<sub>B</sub>T</sup></dt><dd>${sci(Z,6)}</dd>
+   <dt>Integral, L/ℓ<sub>Q</sub></dt><dd>${sci(r,6)}</dd>
+   <dt>Sum − integral</dt><dd><span class="hl">${(Z-r).toFixed(6).replace("-","−")}</span></dd>
+   <dt>Poisson prediction, r − ½ + 2r e<sup>−4πr²</sup></dt><dd>${sci(pred,6)}</dd>
+   <dt>Relative error of the integral</dt><dd>${Z>0?sci(Math.abs(r-Z)/Z*100,3)+"%":"∞"}</dd>`;
+}
+$("#bR").addEventListener("input",e=>{BX.r=bRm.to(+e.target.value);drawBox();});
+// real-gas helper
+const BR={gas:"Ar",T:300};const bTm=logMap(1,3000);
+fillSelect($("#bGas"),Object.keys(GASES),BR.gas);$("#bT").value=bTm.from(BR.T);
+function lQ(m,T){return hP/Math.sqrt(2*Math.PI*m*kB*T);}
+function drawReal(){const l=lQ(GASES[BR.gas].m*amu,BR.T);$("#bTo").textContent=fmtT(BR.T);
+  const rows=[["1 nm",1e-9],["1 µm",1e-6],["1 cm",1e-2]];
+  $("#bReal").innerHTML=`<dt>Quantum length ℓ<sub>Q</sub></dt><dd>${sci(l*1e9,3)} nm</dd>`+rows.map(([n,L])=>`<dt>L/ℓ<sub>Q</sub> for a ${n} box</dt><dd>${sci(L/l,3)}</dd>`).join("");}
+$("#bGas").addEventListener("change",e=>{BR.gas=e.target.value;drawReal();});
+$("#bT").addEventListener("input",e=>{BR.T=bTm.to(+e.target.value);drawReal();});
+
+// ===================== THERMO =====================
+const TH={gas:"Ar",T:300,P:1};const tTm=logMap(1,3000),tPm=logMap(1e-6,1e4);
+fillSelect($("#tGas"),NOBLE,TH.gas);$("#tT").value=tTm.from(TH.T);$("#tP").value=tPm.from(TH.P);
+function thermo(gas,T,P){const m=GASES[gas].m*amu,kT=kB*T;const VN=kT/(P*atm);const l=lQ(m,T);const vQ=l*l*l;const ratio=VN/vQ;
+  return{VN,l,vQ,ratio,SNk:Math.log(ratio)+2.5,mu:-kT*Math.log(ratio)/eV,U:1.5*kT/eV};}
+function drawThermo(){
+  const tc=$("#tCv");const{ctx,w,h}=prep(tc);const L=50,R=16,T=16,B=44;const pw=w-L-R,ph=h-T-B;
+  const lt0=0,lt1=Math.log10(3000);const ymin=-6,ymax=32;
+  const X=Tk=>L+(Math.log10(Tk)-lt0)/(lt1-lt0)*pw,Y=s=>T+ph-(s-ymin)/(ymax-ymin)*ph;
+  ctx.fillStyle=C.red;ctx.globalAlpha=.08;ctx.fillRect(L,Y(2.5),pw,T+ph-Y(2.5));ctx.globalAlpha=1;
+  ctx.strokeStyle=C.rule;ctx.lineWidth=1;ctx.font=`13px ${SERIF}`;ctx.fillStyle=C.ink2;
+  ctx.textAlign="center";ctx.textBaseline="top";
+  for(const t of[1,3,10,30,100,300,1000,3000]){const x=X(t);ctx.globalAlpha=.55;ctx.beginPath();ctx.moveTo(x,T);ctx.lineTo(x,T+ph);ctx.stroke();ctx.globalAlpha=1;ctx.fillText(t,x,T+ph+5);}
+  ctx.textAlign="right";ctx.textBaseline="middle";
+  for(let s=-5;s<=30;s+=5){const y=Y(s);ctx.globalAlpha=.55;ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(L+pw,y);ctx.stroke();ctx.globalAlpha=1;ctx.fillText(s,L-6,y);}
+  axes(ctx,L,T,pw,ph);ctx.textAlign="center";ctx.textBaseline="alphabetic";ctx.fillText("temperature (K), log scale",L+pw/2,h-6);
+  ctx.save();ctx.translate(14,T+ph/2);ctx.rotate(-Math.PI/2);rich(ctx,["S / Nk",{sub:"B"}],0,0);ctx.restore();
+  ctx.setLineDash([6,4]);ctx.strokeStyle=C.red;ctx.beginPath();ctx.moveTo(L,Y(2.5));ctx.lineTo(L+pw,Y(2.5));ctx.stroke();ctx.setLineDash([]);
+  ctx.font=`italic 14px ${SERIF}`;ctx.fillStyle=C.red;ctx.textAlign="left";rich(ctx,["V/N = v",{sub:"Q"},": quantum regime below"],L+8,Y(2.5)+18);
+  ctx.save();ctx.beginPath();ctx.rect(L,T,pw,ph);ctx.clip();
+  for(const g of NOBLE){const sel=g===TH.gas;ctx.strokeStyle=sel?C.ink:C.ink2;ctx.globalAlpha=sel?1:.35;ctx.lineWidth=sel?2.6:1.2;ctx.beginPath();
+    for(let i=0;i<=200;i++){const t=Math.pow(10,lt0+(lt1-lt0)*i/200);const y=Y(thermo(g,t,TH.P).SNk);i?ctx.lineTo(X(t),y):ctx.moveTo(X(t),y);}ctx.stroke();
+    ctx.globalAlpha=sel?1:.6;ctx.fillStyle=sel?C.ink:C.ink2;ctx.font=`12px ${SERIF}`;ctx.textAlign="right";const ye=Y(thermo(g,3000,TH.P).SNk);ctx.fillText(g,L+pw-3,ye-5);}
+  ctx.globalAlpha=1;ctx.restore();
+  const d=thermo(TH.gas,TH.T,TH.P);const px=X(TH.T),py=Y(d.SNk);
+  ctx.fillStyle=C.hl;ctx.strokeStyle=C.ink;ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(px,Math.max(T,Math.min(T+ph,py)),6,0,2*Math.PI);ctx.fill();ctx.stroke();
+  ctx.font=`italic 15px ${SERIF}`;ctx.fillStyle=C.green;ctx.textAlign=px>L+pw*0.6?"right":"left";ctx.fillText(`S/Nk = ${d.SNk.toFixed(2)}`,px+(px>L+pw*0.6?-10:10),Math.max(T+14,Math.min(T+ph-6,py-10)));
+  $("#tTo").textContent=fmtT(TH.T);$("#tPo").textContent=TH.P>=0.01&&TH.P<1e4?(+TH.P.toPrecision(3))+" atm":sci(TH.P,2)+" atm";
+  let badge;if(d.ratio<1)badge=`<span class="badge quantum">quantum: formula fails</span>`;else if(d.ratio<100)badge=`<span class="badge mid">near the quantum limit</span>`;else badge=`<span class="badge classical">classical, dilute</span>`;
+  const Smol=d.SNk*kB*NA;
+  $("#tRead").innerHTML=`
+   <dt>Regime</dt><dd>${badge}</dd>
+   <dt>Volume per molecule, V/N</dt><dd>${sci(d.VN*1e27,3)} nm³</dd>
+   <dt>Quantum length ℓ<sub>Q</sub></dt><dd>${sci(d.l*1e9,3)} nm</dd>
+   <dt>Quantum volume v<sub>Q</sub></dt><dd>${sci(d.vQ*1e27,3)} nm³</dd>
+   <dt>V / (N v<sub>Q</sub>)</dt><dd>${sci(d.ratio,3)}</dd>
+   <div class="gap"></div>
+   <dt>Entropy per molecule, S/Nk<sub>B</sub></dt><dd><span class="hl">${d.SNk.toFixed(2)}</span></dd>
+   <dt>Molar entropy</dt><dd>${Smol.toFixed(1)} J/(mol·K)</dd>
+   <dt>Tabulated at 298 K, 1 bar</dt><dd>${S0TAB[TH.gas].toFixed(1)} J/(mol·K)</dd>
+   <dt>Chemical potential μ</dt><dd>${d.mu.toFixed(3).replace("-","−")} eV</dd>
+   <dt>Energy per molecule, U/N = 3k<sub>B</sub>T/2</dt><dd>${(d.U*1000).toFixed(2)} meV</dd>
+   <dt>Heat capacity, C<sub>V</sub>/Nk<sub>B</sub></dt><dd>1.5</dd>`;
+}
+$("#tGas").addEventListener("change",e=>{TH.gas=e.target.value;drawThermo();});
+$("#tT").addEventListener("input",e=>{TH.T=tTm.to(+e.target.value);drawThermo();});
+$("#tP").addEventListener("input",e=>{TH.P=tPm.to(+e.target.value);drawThermo();});
+$("#tStd").addEventListener("click",()=>{TH.T=298.15;TH.P=0.986923;$("#tT").value=tTm.from(TH.T);$("#tP").value=tPm.from(TH.P);drawThermo();});
+
+// ===================== boot =====================
+function drawAll(){readColors();drawHero();drawSim();drawCount();drawBox();drawReal();drawThermo();}
+drawAll();
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(drawAll);
+let rt;new ResizeObserver(()=>{clearTimeout(rt);rt=setTimeout(drawAll,60);}).observe(document.body);
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",drawAll);
+new MutationObserver(drawAll).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+})();
+</script>
+</body>
+</html>
