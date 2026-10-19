@@ -277,6 +277,16 @@ button.theme-btn svg{width:20px; height:20px; fill:none; stroke:currentColor; st
       <dl class="read" id="tRead"></dl>
     </div>
   </div>
+  <h3>Picture it: the room each molecule has, against \(\ell_Q\)</h3>
+  <div class="layout" style="margin-top:8px">
+    <div class="sheet"><canvas id="tPic" class="cv-mid" aria-label="Molecules moving in a box, each surrounded by a disc whose diameter is the quantum length"></canvas>
+      <p class="cap">The gas, temperature and pressure chosen above, drawn to scale. The solid box holds 40 molecules, and its side is set by the spacing \((V/N)^{1/3}\). The shaded disc around each molecule has diameter \(\ell_Q\). The dashed box holds the same 40 molecules at 298&nbsp;K and the same pressure, so heating the gas makes the box grow, since \(V\propto T\) at fixed \(P\). Once the discs start to overlap, \(V/N\approx v_Q\) and the gas is no longer classical.</p></div>
+    <div>
+      <dl class="read" id="tPicRead" style="margin-top:0"></dl>
+      <div class="row" style="margin-top:14px"><button class="btn" id="tPicRun" aria-pressed="false">Pause motion</button></div>
+      <p class="note">Try argon at 300 K and 1 atm: the discs are far too small to see. Then cool helium below a few kelvin at high pressure, and watch the discs grow and merge.</p>
+    </div>
+  </div>
   <div class="cols prose" style="margin-top:22px;font-size:16.5px">
     <p><strong>Why the \(1/N!\) matters.</strong> Without it, \(S/Nk_B=\ln(V/v_Q)+\tfrac32\) depends on \(V\) rather than \(V/N\). Pull out a partition between two identical boxes of the same gas and that formula would add \(2Nk_B\ln 2\) of entropy, though nothing has changed. This is the Gibbs paradox; the \(N!\) restores extensivity.</p>
     <p><strong>Where \(\tfrac32Nk_BT\) comes from.</strong> \(Z_\text{tr}=V/v_Q\propto\beta^{-3/2}\), so \(-\partial\ln Z/\partial\beta\) gives \(\tfrac32 k_BT\) per molecule: the equipartition result, recovered here as the classical limit of the quantum sum.</p>
@@ -704,11 +714,51 @@ function drawThermo(){
    <dt>Chemical potential μ</dt><dd>${d.mu.toFixed(3).replace("-","−")} eV</dd>
    <dt>Energy per molecule, U/N = 3k<sub>B</sub>T/2</dt><dd>${(d.U*1000).toFixed(2)} meV</dd>
    <dt>Heat capacity, C<sub>V</sub>/Nk<sub>B</sub></dt><dd>1.5</dd>`;
+  if(typeof drawPic==="function")drawPic();
 }
 $("#tGas").addEventListener("change",e=>{TH.gas=e.target.value;drawThermo();});
 $("#tT").addEventListener("input",e=>{TH.T=tTm.to(+e.target.value);drawThermo();});
 $("#tP").addEventListener("input",e=>{TH.P=tPm.to(+e.target.value);drawThermo();});
 $("#tStd").addEventListener("click",()=>{TH.T=298.15;TH.P=0.986923;$("#tT").value=tTm.from(TH.T);$("#tP").value=tPm.from(TH.P);drawThermo();});
+
+// ===================== THERMO: picture of V/N against v_Q =====================
+const PIC={run:!reduce,parts:[],visible:false,last:0};
+for(let i=0;i<40;i++){const a=2*Math.PI*Math.random();PIC.parts.push({x:Math.random(),y:Math.random(),dx:Math.cos(a),dy:Math.sin(a),f:0.6+0.8*Math.random()});}
+const picCv=$("#tPic"),picBtn=$("#tPicRun");
+function setPicRun(r){PIC.run=r;picBtn.textContent=r?"Pause motion":"Play motion";picBtn.setAttribute("aria-pressed",!r);}
+picBtn.addEventListener("click",()=>setPicRun(!PIC.run));setPicRun(PIC.run);
+function drawPic(){
+  const{ctx,w,h}=prep(picCv);const d=thermo(TH.gas,TH.T,TH.P);
+  const sp=Math.cbrt(d.VN),spRef=Math.cbrt(kB*298.15/(TH.P*atm));const NX=8,NY=5;
+  const s=Math.min((w-36)/(NX*Math.max(sp,spRef)),(h-36)/(NY*Math.max(sp,spRef)));
+  const bw=NX*sp*s,bh=NY*sp*s,x0=(w-bw)/2,y0=(h-bh)/2,rw=NX*spRef*s,rh=NY*spRef*s;
+  ctx.setLineDash([5,4]);ctx.strokeStyle=C.ink2;ctx.lineWidth=1.2;ctx.strokeRect((w-rw)/2,(h-rh)/2,rw,rh);ctx.setLineDash([]);
+  ctx.strokeStyle=C.blue;ctx.lineWidth=1.8;ctx.strokeRect(x0,y0,bw,bh);
+  const r=Math.min(0.5*d.l*s,4*Math.max(bw,bh));
+  ctx.save();ctx.beginPath();ctx.rect(x0,y0,bw,bh);ctx.clip();
+  for(const q of PIC.parts){const px=x0+q.x*bw,py=y0+q.y*bh;ctx.beginPath();ctx.arc(px,py,Math.max(r,0.5),0,2*Math.PI);
+    ctx.fillStyle=C.band;ctx.fill();ctx.strokeStyle=C.blue;ctx.globalAlpha=.5;ctx.lineWidth=1;ctx.stroke();ctx.globalAlpha=1;}
+  ctx.restore();
+  for(const q of PIC.parts){ctx.beginPath();ctx.arc(x0+q.x*bw,y0+q.y*bh,Math.max(2,Math.min(3.2,bw/60)),0,2*Math.PI);ctx.fillStyle=C.ink;ctx.fill();}
+  const ratio=sp/d.l;let badge;if(d.ratio<1)badge=`<span class="badge quantum">discs overlap: quantum</span>`;else if(d.ratio<100)badge=`<span class="badge mid">discs nearly touching</span>`;else badge=`<span class="badge classical">discs far apart: classical</span>`;
+  $("#tPicRead").innerHTML=`
+   <dt>Regime</dt><dd>${badge}</dd>
+   <dt>Spacing between molecules, (V/N)<sup>1/3</sup></dt><dd>${sci(sp*1e9,3)} nm</dd>
+   <dt>Quantum length ℓ<sub>Q</sub> (disc diameter)</dt><dd>${sci(d.l*1e9,3)} nm</dd>
+   <dt>Spacing / ℓ<sub>Q</sub></dt><dd><span class="hl">${sci(ratio,3)}</span></dd>
+   <dt>V / (N v<sub>Q</sub>) = (spacing / ℓ<sub>Q</sub>)³</dt><dd>${sci(d.ratio,3)}</dd>
+   <div class="gap"></div>
+   <dt>Box size relative to 298 K</dt><dd>×${sci(Math.cbrt(TH.T/298.15),3)}</dd>
+   <dt>Speed of the dots</dt><dd>∝ √(T/m)</dd>`;
+}
+function picLoop(t){const dt=Math.min(0.05,(t-PIC.last)/1000||0);PIC.last=t;
+  if(PIC.visible&&PIC.run){const m=GASES[TH.gas].m;const v=Math.max(0.02,Math.min(0.9,0.12*Math.sqrt((TH.T/300)*(39.948/m))));
+    for(const q of PIC.parts){q.x+=q.dx*v*q.f*dt;q.y+=q.dy*v*q.f*dt*1.6;
+      if(q.x<0){q.x=-q.x;q.dx=-q.dx;}if(q.x>1){q.x=2-q.x;q.dx=-q.dx;}if(q.y<0){q.y=-q.y;q.dy=-q.dy;}if(q.y>1){q.y=2-q.y;q.dy=-q.dy;}}
+    drawPic();}
+  requestAnimationFrame(picLoop);}
+new IntersectionObserver(es=>{PIC.visible=es[0].isIntersecting;},{threshold:0.05}).observe(picCv);
+requestAnimationFrame(picLoop);
 
 // ===================== boot =====================
 function drawAll(){readColors();drawHero();drawSim();drawCount();drawBox();drawReal();drawThermo();}

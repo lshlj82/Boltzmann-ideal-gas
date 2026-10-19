@@ -21,7 +21,7 @@ The page follows Sections 6.4, 6.6, and 6.7 of the lecture notes.
 - the Sackur–Tetrode entropy, alongside tabulated values for comparison
 - μ, U, and C_V
 
-A plot of S/Nk_B against temperature marks where V/N < v_Q, which is where Boltzmann statistics breaks down.
+A plot of S/Nk_B against temperature marks where V/N < v_Q, which is where Boltzmann statistics breaks down. Below it, an animated picture shows the same state to scale: 40 molecules moving in a box whose side is set by the spacing (V/N)^(1/3), each surrounded by a disc of diameter ℓ_Q, next to a dashed box for the same gas at 298 K. Heating the gas at fixed pressure makes the box grow, and cooling or compressing it makes the discs grow until they overlap, which is where the gas stops being classical.
 
 ## Running it
 
