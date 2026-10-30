@@ -67,7 +67,9 @@ section{padding:44px 0 36px;border-top:1px solid var(--rule)}
 header + section{border-top:none;padding-top:16px}
 .sheet{background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:14px}
 .layout{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(0,1fr);gap:22px;align-items:start;margin-top:18px}
-@media (max-width:880px){.layout{grid-template-columns:minmax(0,1fr)}}
+.layout.l12{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)}
+.layout.l11{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+@media (max-width:880px){.layout,.layout.l12,.layout.l11{grid-template-columns:minmax(0,1fr)}}
 .trio{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr) minmax(0,1.3fr);gap:14px;margin-top:18px}
 @media (max-width:900px){.trio{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.trio .wide{grid-column:1/-1}}
 @media (max-width:560px){.trio{grid-template-columns:minmax(0,1fr)}}
@@ -106,6 +108,7 @@ select{font:inherit;font-size:16px;color:var(--ink);background:var(--sheet);bord
 .cols p{break-inside:avoid}
 footer{padding:30px 0 50px;color:var(--ink2);font-size:14.5px;border-top:1px solid var(--rule)}
 mjx-container{max-width:100%}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
 <script>try { const t = localStorage.getItem("netsci-theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (e) {}</script>
 <style>
@@ -155,9 +158,9 @@ button.theme-btn svg{width:20px; height:20px; fill:none; stroke:currentColor; st
         <label class="ctl"><span>Temperature</span>
           <input id="hT" type="range" min="0" max="1000" step="1"><output id="hTo"></output></label>
         <label class="ctl"><span>\(v_1\)</span>
-          <input id="hV1" type="range" min="0" max="1000" step="1"><output id="hV1o"></output></label>
+          <input id="hV1" type="range" min="0" max="1000" step="1" aria-label="Speed v1, one edge of the shaded band"><output id="hV1o"></output></label>
         <label class="ctl"><span>\(v_2\)</span>
-          <input id="hV2" type="range" min="0" max="1000" step="1"><output id="hV2o"></output></label>
+          <input id="hV2" type="range" min="0" max="1000" step="1" aria-label="Speed v2, the other edge of the shaded band"><output id="hV2o"></output></label>
         <div class="row">
           <button class="btn" id="hDec" aria-pressed="false">Show the two factors</button>
           <button class="btn" id="hCmp" aria-pressed="false">Compare gases</button>
@@ -176,17 +179,17 @@ button.theme-btn svg{width:20px; height:20px; fill:none; stroke:currentColor; st
     <p>Start 1,200 argon atoms with an artificial distribution of speeds and let them collide. Every collision conserves energy and momentum, but randomizes direction. Nothing in the rules mentions Boltzmann, yet the histogram settles onto the Maxwell curve for the temperature set by the total energy.</p>
   </div>
   <div class="trio">
-    <div class="sheet"><canvas id="sBox" class="cv-sq" aria-label="Box of moving atoms colored by speed"></canvas>
-      <p class="cap">The atoms in their 3D box. Color runs from slow (blue) to fast (red). Drag either view to rotate both.</p></div>
-    <div class="sheet"><canvas id="sVel" class="cv-sq" aria-label="3D velocity space scatter plot with the most likely speed shell"></canvas>
+    <div class="sheet"><canvas id="sBox" class="cv-sq" tabindex="0" aria-label="Box of moving atoms colored by speed. Arrow keys rotate the view, Home resets it."></canvas>
+      <p class="cap">The atoms in their 3D box. Color runs from slow (blue) to fast (red). Drag either view, or focus it and use the arrow keys, to rotate both.</p></div>
+    <div class="sheet"><canvas id="sVel" class="cv-sq" tabindex="0" aria-label="3D velocity space scatter plot with the most likely speed shell. Arrow keys rotate the view, Home resets it."></canvas>
       <p class="cap">Velocity space in 3D. Points are densest at the origin, yet the most likely <em>speed</em> is the green shell at \(v_\text{max}\): its area \(4\pi v^2\) holds more velocity vectors.</p></div>
     <div class="sheet wide"><canvas id="sHist" class="cv-sq" aria-label="Histogram of speeds compared with the Maxwell distribution"></canvas>
       <p class="cap">Histogram of speeds against \(\mathcal{D}(v)\) at the measured temperature.</p></div>
   </div>
-  <div class="layout" style="grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)">
+  <div class="layout l12">
     <div class="controls">
-      <div class="row">
-        <span style="color:var(--ink2);margin-right:4px">Start with</span>
+      <div class="row" role="group" aria-labelledby="sInitLbl">
+        <span id="sInitLbl" style="color:var(--ink2);margin-right:4px">Start with</span>
         <button class="btn" data-init="same" aria-pressed="true">Every atom at one speed</button>
         <button class="btn" data-init="beam" aria-pressed="false">Motion only along x</button>
         <button class="btn" data-init="maxwell" aria-pressed="false">Maxwell already</button>
@@ -197,6 +200,7 @@ button.theme-btn svg{width:20px; height:20px; fill:none; stroke:currentColor; st
         <button class="btn" id="sRun" aria-pressed="false">Pause</button>
         <button class="btn" id="sHeat">Heat (T × 1.5)</button>
         <button class="btn" id="sCool">Cool (T ÷ 1.5)</button>
+        <button class="btn" id="sView">Reset view</button>
       </div>
       <p class="cap">Collisions are counted per atom per second. Set them to zero with “Motion only along x” and the walls alone never thermalize the gas: reflections flip v<sub>x</sub> but keep every speed.</p>
     </div>
@@ -211,8 +215,9 @@ button.theme-btn svg{width:20px; height:20px; fill:none; stroke:currentColor; st
     <p>For two non-interacting, distinguishable particles every pair \((s_1,s_2)\) is a distinct system state, so \(Z_\text{total}=Z_1Z_2\). For identical particles, \((s_1,s_2)\) and \((s_2,s_1)\) are the same state, so the double sum counts nearly every state twice. Only the diagonal \(s_1=s_2\) is counted once, and it becomes a negligible sliver when there are many more single-particle states than particles.</p>
   </div>
   <div class="layout">
-    <div class="sheet"><canvas id="cGrid" class="cv-sq" style="max-width:560px;margin:0 auto" aria-label="Grid of two-particle states"></canvas>
-      <p class="cap">Each cell is one term of \(\sum_{s_1}\sum_{s_2}\) for two particles. Hover or tap a cell to see its mirror image, the same state for identical particles. Magenta cells are \(s_1=s_2\).</p></div>
+    <div class="sheet"><canvas id="cGrid" class="cv-sq" tabindex="0" style="max-width:560px;margin:0 auto" aria-label="Grid of two-particle states. Arrow keys select a cell, Escape clears the selection." aria-describedby="cSel"></canvas>
+      <p class="vh" id="cSel" aria-live="polite"></p>
+      <p class="cap">Each cell is one term of \(\sum_{s_1}\sum_{s_2}\) for two particles. Hover or tap a cell, or focus the grid and use the arrow keys, to see its mirror image, the same state for identical particles. Magenta cells are \(s_1=s_2\).</p></div>
     <div>
       <div class="controls">
         <label class="ctl"><span>Single-particle states, M</span>
@@ -235,7 +240,7 @@ button.theme-btn svg{width:20px; height:20px; fill:none; stroke:currentColor; st
   </div>
   <div class="controls" style="max-width:620px;margin-top:8px">
     <label class="ctl"><span>\(L/\ell_Q\)</span>
-      <input id="bR" type="range" min="0" max="1000" step="1"><output id="bRo"></output></label>
+      <input id="bR" type="range" min="0" max="1000" step="1" aria-label="Box length over quantum length, L / ℓQ"><output id="bRo"></output></label>
   </div>
   <div class="pair">
     <div class="sheet"><canvas id="bLev" class="cv-mid" aria-label="Energy levels and wavefunctions in a box"></canvas>
@@ -243,7 +248,7 @@ button.theme-btn svg{width:20px; height:20px; fill:none; stroke:currentColor; st
     <div class="sheet"><canvas id="bSum" class="cv-mid" aria-label="Boltzmann factors as bars compared with the integral"></canvas>
       <p class="cap">Bars: the terms of the sum. Green area: the integral, exactly \(L/\ell_Q\).</p></div>
   </div>
-  <div class="layout" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)">
+  <div class="layout l11">
     <dl class="read" id="bRead"></dl>
     <div>
       <p class="prose" style="font-size:16px">The sum and the integral differ by almost exactly ½, the half-bar the integral counts at \(n=0\). Poisson summation makes this precise: the next correction is \(2(L/\ell_Q)\,e^{-4\pi(L/\ell_Q)^2}\), which is why Pickover's \(\left(10^{-5}\sum e^{-n^2/10^{10}}\right)^2\) matches π to some 42 billion digits.</p>
@@ -458,10 +463,14 @@ function collide(n){const N=SM.N;for(let k=0;k<n;k++){const i=(Math.random()*N)|
   const a=3*i,b=3*j;const cx=(vel[a]+vel[b])/2,cy=(vel[a+1]+vel[b+1])/2,cz=(vel[a+2]+vel[b+2])/2;
   const gx=vel[a]-vel[b],gy=vel[a+1]-vel[b+1],gz=vel[a+2]-vel[b+2];const g=Math.sqrt(gx*gx+gy*gy+gz*gz)/2;const u=unit();
   vel[a]=cx+g*u[0];vel[a+1]=cy+g*u[1];vel[a+2]=cz+g*u[2];vel[b]=cx-g*u[0];vel[b+1]=cy-g*u[1];vel[b+2]=cz-g*u[2];}}
+// Specular walls at 0 and 1 for a step of any length (repeated Heat can make it span several box widths):
+// unfold into a period-2 coordinate; landing in (1,2) means an odd number of bounces. O(1) per axis.
 function simStep(dt){const sc=dt/(3*SM.vref);
-  for(let k=0;k<3*SM.N;k++){let p=pos[k]+vel[k]*sc;
-    if(p<0){p=-p;vel[k]=-vel[k];}else if(p>1){p=2-p;vel[k]=-vel[k];}
-    pos[k]=Math.min(1,Math.max(0,p));}
+  for(let k=0;k<3*SM.N;k++){const p=pos[k]+vel[k]*sc;
+    if(p>=0&&p<=1){pos[k]=p;continue;}
+    if(!isFinite(p))continue;
+    const q=p-2*Math.floor(p/2);
+    if(q>1){pos[k]=2-q;vel[k]=-vel[k];}else pos[k]=q;}
   SM.acc+=SM.rate*SM.N*dt/2;const n=Math.floor(SM.acc);SM.acc-=n;collide(n);SM.t+=dt;}
 function simStats(){let s2=0,s1=0;const sp=new Float64Array(SM.N);
   for(let i=0;i<SM.N;i++){const v=Math.hypot(vel[3*i],vel[3*i+1],vel[3*i+2]);sp[i]=v;s1+=v;s2+=v*v;}
@@ -555,7 +564,14 @@ for(const id of["#sBox","#sVel"]){const cv=$(id);cv.style.cursor="grab";
   cv.addEventListener("pointerdown",e=>{CAM.drag={x:e.clientX,y:e.clientY};cv.setPointerCapture(e.pointerId);cv.style.cursor="grabbing";});
   cv.addEventListener("pointermove",e=>{if(!CAM.drag)return;CAM.yaw+=(e.clientX-CAM.drag.x)*0.01;
     CAM.pitch=Math.max(-1.45,Math.min(1.45,CAM.pitch+(e.clientY-CAM.drag.y)*0.01));CAM.drag={x:e.clientX,y:e.clientY};drawSim();});
-  const end=()=>{CAM.drag=null;cv.style.cursor="grab";};cv.addEventListener("pointerup",end);cv.addEventListener("pointercancel",end);}
+  const end=()=>{CAM.drag=null;cv.style.cursor="grab";};cv.addEventListener("pointerup",end);cv.addEventListener("pointercancel",end);
+  // keyboard equivalent of dragging: arrows rotate by the same sense as a drag, Home resets
+  cv.addEventListener("keydown",e=>{const d={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];
+    if(e.key==="Home"){resetView();e.preventDefault();return;}
+    if(!d)return;e.preventDefault();const st=e.shiftKey?0.4:0.12;CAM.yaw+=d[0]*st;
+    CAM.pitch=Math.max(-1.45,Math.min(1.45,CAM.pitch+d[1]*st));drawSim();});}
+function resetView(){CAM.yaw=0.65;CAM.pitch=0.42;drawSim();}
+$("#sView").addEventListener("click",resetView);
 requestAnimationFrame(loop);
 
 // ===================== COUNTING =====================
@@ -580,6 +596,9 @@ function drawCount(){
   if(CN.hover){const[a,b]=CN.hover;ctx.font=`italic 15px ${SERIF}`;ctx.fillStyle=C.magenta;ctx.textAlign="left";
     const txt=a===b?`(${a+1}, ${a+1}) counted once`:`(${a+1}, ${b+1}) = (${b+1}, ${a+1})`;
     ctx.fillText(txt,g.L+6,g.T+18);}
+  const sel=!CN.hover?"":CN.hover[0]===CN.hover[1]?`Cell s₁ = ${CN.hover[0]+1}, s₂ = ${CN.hover[1]+1}: on the diagonal, counted once.`:
+    `Cell s₁ = ${CN.hover[0]+1}, s₂ = ${CN.hover[1]+1}: the same state as s₁ = ${CN.hover[1]+1}, s₂ = ${CN.hover[0]+1} for identical particles.`;
+  if($("#cSel").textContent!==sel)$("#cSel").textContent=sel;
   // readouts
   const{M:m,N:n}=CN;const dist=Math.pow(m,n),appr=dist/fact(n),bos=binom(m+n-1,n),fer=binom(m,n);
   $("#cMo").textContent=m;$("#cNo").textContent=n;
@@ -601,6 +620,11 @@ function cellAt(ev){const r=cGrid.getBoundingClientRect();const g=gridGeom(r.wid
 cGrid.addEventListener("pointermove",ev=>{CN.hover=cellAt(ev);drawCount();});
 cGrid.addEventListener("pointerdown",ev=>{CN.hover=cellAt(ev);drawCount();});
 cGrid.addEventListener("pointerleave",ev=>{if(ev.pointerType==="mouse"){CN.hover=null;drawCount();}});
+// keyboard: arrows move the selected cell (up = higher s₂, as drawn), Escape clears it
+cGrid.addEventListener("keydown",ev=>{const d={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,1],ArrowDown:[0,-1]}[ev.key];
+  if(ev.key==="Escape"&&CN.hover){CN.hover=null;drawCount();ev.preventDefault();return;}
+  if(!d)return;ev.preventDefault();const cl=v=>Math.max(0,Math.min(CN.M-1,v));
+  CN.hover=CN.hover?[cl(CN.hover[0]+d[0]),cl(CN.hover[1]+d[1])]:[0,0];drawCount();});
 
 // ===================== BOX =====================
 const BX={r:3};const bRm=logMap(0.1,1000);
